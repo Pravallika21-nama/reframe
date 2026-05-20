@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { OverlayPosition } from "@/lib/types";
 import { ArrowUpLeft, ArrowUpRight, ArrowDownLeft, ArrowDownRight, Upload, Trash2, FileImage } from "lucide-react";
-
+import Image from "next/image";
 interface ImageOverlayPanelProps {
   overlayFile: File | null;
   setOverlayFile: (file: File | null) => void;
@@ -70,11 +70,14 @@ export default function ImageOverlayPanel({
             : "border-dashed border-[#2d4266] hover:bg-white/5 text-[#c7d8f7] hover:text-white cursor-pointer"
         }`}>
           {thumbUrl ? (
-            <img 
-              src={thumbUrl} 
-              alt="Overlay preview" 
-              className="w-full h-full object-cover" 
-            />
+            <div className="relative w-full h-full">
+  <Image
+    src={thumbUrl}
+    alt="Overlay preview"
+    fill
+    className="object-cover"
+  />
+</div>
           ) : (
             <>
               <Upload size={14} className="opacity-80" />

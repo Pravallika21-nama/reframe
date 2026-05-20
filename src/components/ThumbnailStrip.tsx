@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
 
 interface Thumbnail {
   time: number;
@@ -84,7 +85,10 @@ export default function ThumbnailStrip({
         const onSeeked = () => {
           video.removeEventListener("seeked", onSeeked);
           ctx.drawImage(video, 0, 0, thumbW, thumbH);
-          captured.push({ time, dataUrl: canvas.toDataURL("image/jpeg", 0.7) });
+          captured.push({
+            time,
+            dataUrl: canvas.toDataURL("image/jpeg", 0.7),
+          });
           setThumbnails([...captured]);
           setProgress(Math.round(((i + 1) / times.length) * 100));
           resolve();
@@ -100,13 +104,14 @@ export default function ThumbnailStrip({
   }, [videoSrc, duration, intervalSeconds]);
 
   useEffect(() => {
-    if (videoSrc && duration > 0) {
-      generateThumbnails();
-    }
-    return () => {
-      abortRef.current = true;
-    };
-  }, [generateThumbnails]);
+  if (videoSrc && duration > 0) {
+    generateThumbnails();
+  }
+
+  return () => {
+    abortRef.current = true;
+  };
+}, [videoSrc, duration, generateThumbnails]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -125,14 +130,8 @@ export default function ThumbnailStrip({
   return (
     <div className="thumbnail-strip-wrapper">
       <div className="strip-header">
-        <span className="strip-label">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="0.5" y="0.5" width="11" height="11" rx="1.5" stroke="currentColor" />
-            <rect x="3" y="2.5" width="1.5" height="7" rx="0.5" fill="currentColor" />
-            <rect x="7.5" y="2.5" width="1.5" height="7" rx="0.5" fill="currentColor" />
-          </svg>
-          Frames
-        </span>
+        <span className="strip-label">Frames</span>
+
         {isGenerating && (
           <span className="strip-progress">
             <span
@@ -142,6 +141,7 @@ export default function ThumbnailStrip({
             <span className="progress-text">{progress}%</span>
           </span>
         )}
+
         {!isGenerating && thumbnails.length > 0 && (
           <span className="strip-meta">
             {thumbnails.length} frames · every {intervalSeconds}s
@@ -153,7 +153,7 @@ export default function ThumbnailStrip({
         {thumbnails.length === 0 && isGenerating && (
           <div className="strip-skeleton">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="skeleton-thumb" style={{ animationDelay: `${i * 80}ms` }} />
+              <div key={i} className="skeleton-thumb" />
             ))}
           </div>
         )}
@@ -163,26 +163,30 @@ export default function ThumbnailStrip({
             {thumbnails.map((thumb, i) => {
               const isActive = i === activeIndex;
               const inTrimRange =
-                thumb.time >= trimStart && thumb.time <= effectiveTrimEnd;
-              const isHovered = hoveredIndex === i;
+                thumb.time >= trimStart &&
+                thumb.time <= effectiveTrimEnd;
 
               return (
                 <button
                   key={thumb.time}
                   className={`thumb-btn ${isActive ? "active" : ""} ${
                     !inTrimRange ? "out-of-range" : ""
-                  } ${isHovered ? "hovered" : ""}`}
+                  }`}
                   onClick={() => onSeek(thumb.time)}
-                  onMouseEnter={() => setHoveredIndex(i)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                  title={`Seek to ${formatTime(thumb.time)}`}
                 >
-                  <img
+                  <Image
                     src={thumb.dataUrl}
-                    alt={`Frame at ${formatTime(thumb.time)}`}
-                    draggable={false}
+                    alt={`Thumbnail at ${formatTime(thumb.time)}`}
+                    width={106}
+                    height={60}
+                    className="object-cover"
+                    unoptimized
                   />
-                  <span className="thumb-time">{formatTime(thumb.time)}</span>
+
+                  <span className="thumb-time">
+                    {formatTime(thumb.time)}
+                  </span>
+
                   {isActive && <span className="active-indicator" />}
                 </button>
               );
@@ -190,208 +194,6 @@ export default function ThumbnailStrip({
           </div>
         )}
       </div>
-
-      <style>{`
-        .thumbnail-strip-wrapper {
-          width: 100%;
-          background: #0d0d0f;
-          border: 1px solid #1e1e24;
-          border-radius: 10px;
-          overflow: hidden;
-          font-family: 'SF Mono', 'Fira Code', monospace;
-        }
-
-        .strip-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 8px 14px;
-          background: #111115;
-          border-bottom: 1px solid #1e1e24;
-        }
-
-        .strip-label {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: #5a5a72;
-        }
-
-        .strip-progress {
-          position: relative;
-          flex: 1;
-          height: 3px;
-          background: #1e1e24;
-          border-radius: 2px;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-        }
-
-        .progress-bar {
-          position: absolute;
-          left: 0;
-          top: 0;
-          height: 100%;
-          background: linear-gradient(90deg, #4f6ef7, #a78bfa);
-          border-radius: 2px;
-          transition: width 0.2s ease;
-        }
-
-        .progress-text {
-          position: absolute;
-          right: -28px;
-          font-size: 9px;
-          color: #5a5a72;
-          white-space: nowrap;
-        }
-
-        .strip-meta {
-          margin-left: auto;
-          font-size: 10px;
-          color: #3a3a50;
-        }
-
-        .strip-scroll-area {
-          overflow-x: auto;
-          overflow-y: hidden;
-          padding: 10px 10px 6px;
-          scrollbar-width: thin;
-          scrollbar-color: #2a2a35 transparent;
-        }
-
-        .strip-scroll-area::-webkit-scrollbar {
-          height: 4px;
-        }
-
-        .strip-scroll-area::-webkit-scrollbar-track {
-          background: transparent;
-        }
-
-        .strip-scroll-area::-webkit-scrollbar-thumb {
-          background: #2a2a35;
-          border-radius: 2px;
-        }
-
-        .strip-skeleton {
-          display: flex;
-          gap: 6px;
-        }
-
-        .skeleton-thumb {
-          width: 106px;
-          height: 60px;
-          border-radius: 6px;
-          background: linear-gradient(90deg, #111115 25%, #1a1a22 50%, #111115 75%);
-          background-size: 200% 100%;
-          animation: shimmer 1.4s infinite;
-          flex-shrink: 0;
-        }
-
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-
-        .strip-inner {
-          display: flex;
-          gap: 6px;
-          align-items: flex-end;
-        }
-
-        .thumb-btn {
-          position: relative;
-          padding: 0;
-          border: none;
-          background: none;
-          cursor: pointer;
-          border-radius: 6px;
-          overflow: hidden;
-          flex-shrink: 0;
-          width: 106px;
-          height: 60px;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-          outline: 2px solid transparent;
-          outline-offset: 1px;
-        }
-
-        .thumb-btn img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-          border-radius: 6px;
-          filter: brightness(0.85);
-          transition: filter 0.15s ease;
-        }
-
-        .thumb-btn:hover img,
-        .thumb-btn.hovered img {
-          filter: brightness(1.05);
-        }
-
-        .thumb-btn:hover,
-        .thumb-btn.hovered {
-          transform: translateY(-3px) scale(1.04);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-          outline-color: rgba(79, 110, 247, 0.5);
-          z-index: 2;
-        }
-
-        .thumb-btn.active {
-          outline-color: #4f6ef7;
-          box-shadow: 0 0 0 2px #4f6ef7, 0 8px 20px rgba(79,110,247,0.3);
-          z-index: 3;
-        }
-
-        .thumb-btn.active img {
-          filter: brightness(1.1);
-        }
-
-        .thumb-btn.out-of-range img {
-          filter: brightness(0.35) saturate(0.2);
-        }
-
-        .thumb-time {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 3px 4px 3px;
-          background: linear-gradient(transparent, rgba(0,0,0,0.85));
-          font-size: 9px;
-          color: rgba(255,255,255,0.75);
-          text-align: center;
-          letter-spacing: 0.04em;
-          pointer-events: none;
-          border-radius: 0 0 6px 6px;
-        }
-
-        .thumb-btn.active .thumb-time {
-          color: #a5b4fc;
-        }
-
-        .active-indicator {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #4f6ef7;
-          box-shadow: 0 0 6px #4f6ef7;
-          animation: pulse-dot 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse-dot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.7); }
-        }
-      `}</style>
     </div>
   );
 }
