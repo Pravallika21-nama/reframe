@@ -422,7 +422,7 @@ export function useVideoEditor() {
     const interval = setInterval(() => {
       const mem = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
       if (mem) {
-        console.log("[Reframe Memory]", Math.round(mem.usedJSHeapSize / 1e6), "MB used");
+        
       }
     }, 1000);
 
