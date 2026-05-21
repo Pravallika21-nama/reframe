@@ -422,7 +422,8 @@ export function useVideoEditor() {
     const interval = setInterval(() => {
       const mem = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
       if (mem) {
-        
+      
+      }
     }, 1000);
 
     return () => clearInterval(interval);
