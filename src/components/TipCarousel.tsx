@@ -80,8 +80,10 @@ export default function TipCarousel() {
   };
 
   const activeTip = TIPS[activeIdx];
-  const IconComponent = activeTip.icon;
 
+if (!activeTip) return null;
+
+const IconComponent = activeTip.icon;
   return (
     <div 
       className="mt-6 p-4 rounded-xl border bg-[var(--surface)] border-[var(--border)] text-[var(--text)] text-left flex flex-col justify-between min-h-[142px] transition-all duration-300 shadow-sm relative overflow-hidden"

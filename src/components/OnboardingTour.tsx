@@ -251,7 +251,10 @@ export default function OnboardingTour() {
   useEffect(() => {
   if (localStorage.getItem(TOUR_KEY)) return;
   const t = setTimeout(async () => {
-    const rect = await measureTarget(TOUR_STEPS[0].targetId);
+    const firstStep = TOUR_STEPS?.[0];
+if (!firstStep) return;
+
+const rect = await measureTarget(firstStep.targetId);
     if (rect) {
       setTargetRect(rect);
       setVisible(true);
@@ -263,29 +266,36 @@ export default function OnboardingTour() {
 // Measure target whenever step changes (skip on first render — init effect handles that)
 useEffect(() => {
   if (!visible) return;
+
   if (isFirstRender.current) {
     isFirstRender.current = false;
     return;
   }
-  measureTarget(TOUR_STEPS[stepIndex].targetId).then((rect) => {
+
+  const step = TOUR_STEPS?.[stepIndex];
+  if (!step) return;
+
+  measureTarget(step.targetId).then((rect) => {
     if (rect) {
       setTargetRect(rect);
       setTimeout(() => tooltipRef.current?.focus(), 50);
     } else {
-      if (stepIndex < TOUR_STEPS.length - 1) {
+      if (stepIndex < (TOUR_STEPS?.length ?? 0) - 1) {
         setStepIndex((i) => i + 1);
       } else {
         dismiss();
       }
     }
   });
-}, [stepIndex, visible, measureTarget, dismiss]);
-
+}, [visible, stepIndex]);
   // Re-measure on resize
   useEffect(() => {
   if (!visible) return;
   const onResize = () => {
-    measureTarget(TOUR_STEPS[stepIndex].targetId).then(setTargetRect);
+    const step = TOUR_STEPS?.[stepIndex];
+if (!step) return;
+
+measureTarget(step.targetId)
   };
   window.addEventListener("resize", onResize);
   return () => window.removeEventListener("resize", onResize);
@@ -318,9 +328,9 @@ useEffect(() => {
       />
       <Spotlight rect={targetRect} />
       <Tooltip
-        step={TOUR_STEPS[stepIndex]}
+      step={TOUR_STEPS?.[stepIndex]!}
         stepIndex={stepIndex}
-        totalSteps={TOUR_STEPS.length}
+        totalSteps={TOUR_STEPS?.length ?? 0}
         rect={targetRect}
         onNext={() => {
           if (stepIndex < TOUR_STEPS.length - 1) setStepIndex((i) => i + 1);

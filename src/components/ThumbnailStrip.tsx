@@ -70,9 +70,7 @@ export default function ThumbnailStrip({
     for (let t = 0; t <= duration; t += intervalSeconds) {
       times.push(Math.min(t, duration - 0.1));
     }
-    if (times[times.length - 1] < duration - 0.5) {
-      times.push(duration - 0.1);
-    }
+    const lastTime = times[times.length - 1];
 
     const captured: Thumbnail[] = [];
 
@@ -84,13 +82,20 @@ export default function ThumbnailStrip({
         const onSeeked = () => {
           video.removeEventListener("seeked", onSeeked);
           ctx.drawImage(video, 0, 0, thumbW, thumbH);
-          captured.push({ time, dataUrl: canvas.toDataURL("image/jpeg", 0.7) });
+          if (time !== undefined) {
+  captured.push({
+    time,
+    dataUrl: canvas.toDataURL("image/jpeg", 0.7),
+  });
+}
           setThumbnails([...captured]);
           setProgress(Math.round(((i + 1) / times.length) * 100));
           resolve();
         };
         video.addEventListener("seeked", onSeeked);
-        video.currentTime = time;
+        if (time !== undefined) {
+  video.currentTime = time;
+}
       });
     }
 
@@ -117,7 +122,8 @@ export default function ThumbnailStrip({
   const activeIndex = thumbnails.findIndex(
     (t, i) =>
       currentTime >= t.time &&
-      (i === thumbnails.length - 1 || currentTime < thumbnails[i + 1].time)
+      (i === thumbnails.length - 1 ||
+ currentTime < (thumbnails[i + 1]?.time ?? Infinity))
   );
 
   if (!videoSrc) return null;
