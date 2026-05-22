@@ -588,6 +588,7 @@ export function useVideoEditor() {
     }
   }, [result]);
 
+clean-console-log-fix
  
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
@@ -602,6 +603,8 @@ export function useVideoEditor() {
 
     return () => clearInterval(interval);
   }, [status]);
+
+main
 
  
   useEffect(() => {
