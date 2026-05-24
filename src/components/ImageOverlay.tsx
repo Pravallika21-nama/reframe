@@ -70,10 +70,10 @@ export default function ImageOverlayPanel({
             : "border-dashed border-[#2d4266] hover:bg-white/5 text-[#c7d8f7] hover:text-white cursor-pointer"
         }`}>
           {thumbUrl ? (
-            <img 
-              src={thumbUrl} 
-              alt="Overlay preview" 
-              className="w-full h-full object-cover" 
+            <img
+              src={thumbUrl}
+              alt="Overlay preview"
+              className="object-cover w-full h-full"
             />
           ) : (
             <>
