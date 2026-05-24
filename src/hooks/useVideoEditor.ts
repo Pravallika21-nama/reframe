@@ -587,7 +587,7 @@ export function useVideoEditor() {
       // ignore
     }
   }, [result]);
- clean-final-pr
+
  
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
@@ -596,14 +596,14 @@ export function useVideoEditor() {
     const interval = setInterval(() => {
       const mem = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
       if (mem) {
-        console.log("[Reframe Memory]", Math.round(mem.usedJSHeapSize / 1e6), "MB used");
+        
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, [status]);
 
- main
+ 
 
  
   useEffect(() => {
