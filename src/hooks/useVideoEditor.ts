@@ -656,25 +656,28 @@ export function useVideoEditor() {
       // ignore
     }
   }, [result]);
-
+ 
  
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
     if (status !== "exporting") return;
 
     const interval = setInterval(() => {
-      const mem = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
-      if (mem) {
-        
-      }
-    }, 1000);
+  const mem = (performance as Performance & {
+    memory?: { usedJSHeapSize: number };
+  }).memory;
+
+  if (mem) {
+    // you can log or use it if needed
+    // console.log(mem.usedJSHeapSize);
+  }
+}, 1000);
 
     return () => clearInterval(interval);
   }, [status]);
 
- 
+// main
 
- 
   useEffect(() => {
     localStorage.setItem("soundOnCompletion", String(recipe.soundOnCompletion));
   }, [recipe.soundOnCompletion]);
